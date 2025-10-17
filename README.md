@@ -77,19 +77,10 @@ ros2 topic echo /imu_temperature
 ## 7. Video Walkthrough
 
 Prefer a live demo? Watch the short terminal walkthrough that covers port setup, launch commands, and log inspection:  
+[![IMU terminal demo thumbnail](images/imu_video_thumbnail.png)](https://drive.google.com/file/d/1VAqRX4KtbbWUm0-9MyCw4_mVqH4EXK9D/view?usp=sharing)
 
-<!DOCTYPE html>
-<html>
-<body>
-  
-  <iframe src="url video in google drive/preview" ></iframe>
-  
-  <!--aloow full screen add tag -->
-  
+
 <iframe src="https://drive.google.com/file/d/1VAqRX4KtbbWUm0-9MyCw4_mVqH4EXK9D/view?usp=sharing" width="640" height="480" allow="autoplay"></iframe>
-
-</body>
-</html>
 
 ## 8. Visualise in RViz
 
