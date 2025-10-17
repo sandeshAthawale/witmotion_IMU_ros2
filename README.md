@@ -74,7 +74,12 @@ ros2 topic echo /imu_magnetic_field
 ros2 topic echo /imu_temperature
 ```
 
-## 7. Visualise in RViz
+## 7. Video Walkthrough
+
+Prefer a live demo? Watch the short terminal walkthrough that covers port setup, launch commands, and log inspection:  
+[![IMU terminal demo thumbnail](images/imu_video_thumbnail.svg)](https://drive.google.com/file/d/1VAqRX4KtbbWUm0-9MyCw4_mVqH4EXK9D/view?usp=sharing)
+
+## 8. Visualise in RViz
 
 ```bash
 rviz2
@@ -86,7 +91,7 @@ In RViz (Terminal 2):
 2. Add a **TF** display to view the `base_link → imu_link` transform.
 3. Add an **Imu** display and target `/imu_data_raw`.
 
-## 8. Recorded logs
+## 9. Recorded logs
 
 All CSV logs land in the `log/` folder (configurable with `--ros-args -p log_dir:=...`). The filename follows `YYYYMMDD-HHMMSS.csv`. Use your preferred tools (e.g. Python pandas) to post-process those logs.
 
