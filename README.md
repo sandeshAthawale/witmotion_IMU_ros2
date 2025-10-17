@@ -80,7 +80,6 @@ Prefer a live demo? Watch the short terminal walkthrough that covers port setup,
 [![IMU terminal demo thumbnail](images/imu_video_thumbnail_with_play.svg)](https://drive.google.com/file/d/1VAqRX4KtbbWUm0-9MyCw4_mVqH4EXK9D/view?usp=sharing)
 
 
-
 ## 8. Visualise in RViz
 
 ```bash
