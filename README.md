@@ -98,9 +98,6 @@ All CSV logs land in the `log/` folder (configurable with `--ros-args -p log_dir
 
 ---
 
-You can now integrate the IMU into downstream pipelines (robot localisation, navigation, etc.). When you’re ready to share this workspace, remember to commit `src/` along with this README. Git instructions will follow in the next step.
-
-
 ## Author
 
 Sandesh Athawale<br>
