@@ -5,9 +5,8 @@ from pathlib import Path
 import rclpy
 from rclpy.node import Node
 import tf2_ros
-from sensor_msgs.msg import Imu, MagneticField
+from sensor_msgs.msg import Imu, MagneticField, Temperature
 from geometry_msgs.msg import TransformStamped, Vector3Stamped
-from std_msgs.msg import Float32
 from scipy.spatial.transform import Rotation as R
 from .src.bwt901cl import BWT901CL
 
@@ -26,7 +25,7 @@ class Imu901cl(Node):
         # Create a publisher for IMU raw data
         self.imu_publisher = self.create_publisher(Imu, 'imu_data_raw', 10)
         self.mag_publisher = self.create_publisher(MagneticField, 'imu_magnetic_field', 10)
-        self.temp_publisher = self.create_publisher(Float32, 'imu_temperature', 10)
+        self.temp_publisher = self.create_publisher(Temperature, 'imu_temperature', 10)
         self.angle_publisher = self.create_publisher(Vector3Stamped, 'imu_angle_deg', 10)
         
         # Timer for publishing data
@@ -35,6 +34,30 @@ class Imu901cl(Node):
         # Initialize IMU sensor
         self.get_logger().info(f'Connecting IMU on {port} @ {baudrate} baud')
         self.imu_sensor = BWT901CL(port, baudrate=baudrate)
+
+        # Fixed covariance assumptions (diagonal matrices with zero cross-correlation)
+        self.orientation_covariance = [
+            0.05, 0.0, 0.0,
+            0.0, 0.05, 0.0,
+            0.0, 0.0, 0.05
+        ]
+        self.angular_velocity_covariance = [
+            0.02, 0.0, 0.0,
+            0.0, 0.02, 0.0,
+            0.0, 0.0, 0.02
+        ]
+        self.linear_acceleration_covariance = [
+            0.10, 0.0, 0.0,
+            0.0, 0.10, 0.0,
+            0.0, 0.0, 0.10
+        ]
+        self.temperature_variance = 0.25  
+        '''
+        default variance for the temperature measurement - so the sensor_msgs/Temperature message carries an uncertainty estimate. 
+        ROS defines temperature in Â°C and variance in (Â°C)Â². Since the BWT901C spec doesnâ€t publish its exact temperature noise, 
+        I chose 0.25â€¯Â°CÂ² (ââ€¯0.5â€¯Â°C standard deviation) as a conservative placeholderâ€enough to signal â€moderate confidenceâ€ without pretending the sensor is perfect. 
+        Downstream nodes can use that to weight temperature data appropriately, and you can tighten or loosen it once you have a better estimate. 
+        '''
 
         # Prepare CSV logging
         log_dir = Path(log_dir_param).expanduser()
@@ -66,6 +89,8 @@ class Imu901cl(Node):
             'quaternion_w'
         ])
         self.get_logger().info(f'Logging remaining IMU fields to {self.log_file_path}')
+
+
 
     def timer_callback(self):
         # Get data from IMU
@@ -113,6 +138,10 @@ class Imu901cl(Node):
         imu_msg.linear_acceleration.y = accel[1]
         imu_msg.linear_acceleration.z = accel[2]
 
+        imu_msg.orientation_covariance = self.orientation_covariance
+        imu_msg.angular_velocity_covariance = self.angular_velocity_covariance
+        imu_msg.linear_acceleration_covariance = self.linear_acceleration_covariance
+
         # Publish the IMU raw data message
         self.imu_publisher.publish(imu_msg)
 
@@ -125,8 +154,10 @@ class Imu901cl(Node):
         self.mag_publisher.publish(magnetic_msg)
 
         # Publish temperature
-        temp_msg = Float32()
-        temp_msg.data = float(temp)
+        temp_msg = Temperature()
+        temp_msg.header = imu_msg.header
+        temp_msg.temperature = float(temp)
+        temp_msg.variance = self.temperature_variance
         self.temp_publisher.publish(temp_msg)
 
         # Publish Euler angles in degrees
@@ -136,7 +167,7 @@ class Imu901cl(Node):
         angle_msg.vector.y = float(angle[1])
         angle_msg.vector.z = float(angle[2])
         self.angle_publisher.publish(angle_msg)
- 
+
         timestamp_iso = datetime.now().isoformat(timespec='milliseconds')
         self.csv_writer.writerow([
             timestamp_iso,
